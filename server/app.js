@@ -42,11 +42,13 @@ app.get('/recorder/photo', (req, res, next) => {
 });
 // start
 app.put('/recorder', (req, res, next) => {
+	Recorder.start();
 	res.json({ success: true });
 });
 // stop
 app.delete('/recorder', (req, res, next) => {
-	res.json({ success: true });
+    Recorder.stop();
+    res.json({ success: true });
 });
 
 /**

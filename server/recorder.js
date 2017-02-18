@@ -4,11 +4,28 @@
  * For the full copyright and license information, please view the LICENSE file that was distributed with this source code.
  */
 
-import {execSync} from 'child_process';
+import {execSync, spawn} from 'child_process';
 
-const PATH = '/mjpg-streamer';
-const FILE = 'mjpg_streamer';
+const PATH = '/recorder/script';
+const FILE = 'recorder.sh';
 
 export default class {
+    static start() {
+        kill();
 
+        let proc = spawn(
+            `${PATH}/${FILE}`,
+            [ ],
+            {detached: true, stdio: ['ignore', 'ignore', 'ignore']}
+        );
+        proc.unref();
+    }
+
+    static stop() {
+        kill();
+    }
+}
+
+function kill() {
+    execSync(`pkill -SIGINT ${FILE}; exit 0`);
 }
