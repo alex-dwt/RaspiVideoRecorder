@@ -3,7 +3,7 @@
 # (c) Alexander Lukashevich <aleksandr.dwt@gmail.com>
 # For the full copyright and license information, please view the LICENSE file that was distributed with this source code.
 
-DEV_ID=/dev/video1
+DEV_ID=/dev/video2
 IMAGES_DIR=/tmp/images
 MJPG_STREAMER=/mjpg-streamer/mjpg_streamer
 FILE_DURATION=60 # seconds

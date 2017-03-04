@@ -32,6 +32,6 @@ WORKDIR /recorder
 RUN npm install
 
 COPY ./server /recorder/
-RUN chmod +x ./script/* && cd converter && make
+RUN chmod +x ./script/*
 
 CMD [ "/bin/bash", "/recorder/script/run.sh" ]

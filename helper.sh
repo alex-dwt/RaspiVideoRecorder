@@ -7,6 +7,8 @@ MACHINE_ARCH=$(uname -m | cut -c1-3 | tr '[:lower:]' '[:upper:]')
 WORK_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 BUILD_DIR=$WORK_DIR/build
 MJPG_STREAMER_BIN=$BUILD_DIR/mjpg_streamer
+CONTAINER_NAME=alex-dwt-raspi-video-recorder
+IMAGE_NAME=alex_dwt/raspi-video-recorder
 
 NEW_LINE=$'\n'
 
@@ -77,7 +79,18 @@ function build {
     fi
 
     echo 'Started creating image...'
-    docker build -t alex_dwt/raspi-video-recorder $WORK_DIR
+    docker build -t "$IMAGE_NAME" "$WORK_DIR"
+    echo 'Done!'
+
+    echo 'Compiling converter once...'
+    docker rm -f "$CONTAINER_NAME" >/dev/null 2>&1
+    docker run -d \
+        -v /opt/vc:/opt/vc:ro \
+        --name "$CONTAINER_NAME" \
+        "$IMAGE_NAME"
+    docker exec -it "$CONTAINER_NAME" /bin/bash -c 'cd converter && make'
+    docker commit "$CONTAINER_NAME" "$IMAGE_NAME"
+    docker rm -f "$CONTAINER_NAME" >/dev/null 2>&1
     echo 'Done!'
 }
 
@@ -85,12 +98,12 @@ function build {
 #### Start docker container ###
 #########################
 function start {
-    if [ "$(docker images | egrep -c 'alex_dwt/raspi-video-recorder')" -eq 0 ]; then
+    if [ "$(docker images | egrep -c "$IMAGE_NAME")" -eq 0 ]; then
         echo "Can not find docker image. You should run 'build' command at first!"
         exit 1
     fi
 
-    docker rm -f alex-dwt-raspi-video-recorder >/dev/null 2>&1
+    docker rm -f "$CONTAINER_NAME" >/dev/null 2>&1
 
     docker run -d \
         -p $1:80 \
@@ -98,8 +111,8 @@ function start {
         -v /opt/vc:/opt/vc:ro \
         -v /tmp/images:/tmp/images \
         $(find /dev/ 2>/dev/null | egrep "/dev/video*" | xargs -I {} printf "--device={}:{} ") \
-        --name alex-dwt-raspi-video-recorder \
-        alex_dwt/raspi-video-recorder >/dev/null 2>&1
+        --name "$CONTAINER_NAME" \
+        "$IMAGE_NAME" >/dev/null 2>&1
 
     if [ $? -ne 0 ]
     then
