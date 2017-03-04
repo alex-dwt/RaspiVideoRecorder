@@ -94,6 +94,9 @@ function start {
 
     docker run -d \
         -p $1:80 \
+        --device /dev/vchiq:/dev/vchiq \
+        -v /opt/vc:/opt/vc:ro \
+        -v /tmp/images:/tmp/images \
         $(find /dev/ 2>/dev/null | egrep "/dev/video*" | xargs -I {} printf "--device={}:{} ") \
         --name alex-dwt-raspi-video-recorder \
         alex_dwt/raspi-video-recorder >/dev/null 2>&1

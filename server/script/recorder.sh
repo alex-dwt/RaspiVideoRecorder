@@ -47,7 +47,7 @@ do
     ##############
     # Record images
     ###########
-    "$MJPG_STREAMER" -i "input_uvc.so -d $DEV_ID -y -q 25" -o "output_file.so -d 0 -f $dir" &
+    "$MJPG_STREAMER" -i "input_uvc.so -d $DEV_ID -q 100 -r 1920x1080" -o "output_file.so -d 0 -f $dir" &
     streamerPid=$!
 
     timer=0
@@ -60,5 +60,5 @@ do
         timer=$((timer+1))
     done
 
-    killStreamer
+    killStreamer 0
 done
