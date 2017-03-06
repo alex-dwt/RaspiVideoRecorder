@@ -28,18 +28,23 @@ app.use(function(req, res, next) {
 /**
  * Images recorder
  */
-// list with images directories
-app.get('/recorder/list', (req, res, next) => {
+// mark dir as saved
+app.put('/recorder/save/:dir', (req, res, next) => {
+    Recorder.saveDir(req.params.dir);
     res.json({ success: true });
+});
+// list with images directories
+app.get('/recorder/dirs', (req, res, next) => {
+    res.json({ dirs: Recorder.getDirs() });
 });
 // status
 app.get('/recorder/status', (req, res, next) => {
     res.json({ isWorking: Recorder.isWorking() });
 });
 // take current photo
-app.get('/recorder/photo', (req, res, next) => {
-    res.json({ success: true });
-});
+// app.get('/recorder/photo', (req, res, next) => {
+//     res.json({ success: true });
+// });
 // start
 app.put('/recorder', (req, res, next) => {
 	Recorder.start();
