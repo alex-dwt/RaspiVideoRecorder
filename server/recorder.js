@@ -11,7 +11,9 @@ const FILE = 'recorder.sh';
 
 export default class {
     static start() {
-        kill();
+        if (this.isWorking()) {
+            return;
+        }
 
         let proc = spawn(
             `${PATH}/${FILE}`,
@@ -22,10 +24,10 @@ export default class {
     }
 
     static stop() {
-        kill();
+        execSync(`pkill -SIGINT ${FILE}; exit 0`);
     }
-}
 
-function kill() {
-    execSync(`pkill -SIGINT ${FILE}; exit 0`);
+    static isWorking() {
+        return ! parseInt(execSync(`pgrep ${FILE} > /dev/null 2>&1; echo $?`).toString());
+    }
 }

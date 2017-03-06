@@ -34,7 +34,7 @@ app.get('/recorder/list', (req, res, next) => {
 });
 // status
 app.get('/recorder/status', (req, res, next) => {
-    res.json({ success: true });
+    res.json({ isWorking: Recorder.isWorking() });
 });
 // take current photo
 app.get('/recorder/photo', (req, res, next) => {
