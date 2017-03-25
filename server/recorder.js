@@ -6,9 +6,14 @@
 
 import {execSync, spawn} from 'child_process';
 
-const PATH = '/recorder/script';
-const FILE = 'recorder.sh';
-const FILES_PATH = '/tmp/images';
+const RECORDER_BIN = 'v4l2-ctl';
+const REFRESH_TIMEOUT = 15;
+
+let refreshTimeout;
+let proc;
+let currentDir = '';
+let currentFile = '';
+let currentFps = '';
 
 export default class {
     static start() {
@@ -16,51 +21,59 @@ export default class {
             return;
         }
 
-        let proc = spawn(
-            `${PATH}/${FILE}`,
-            [ ],
-            {detached: true, stdio: ['ignore', 'ignore', 'ignore']}
+        updateStatus();
+        
+        proc = spawn(
+            RECORDER_BIN,
+            ['--stream-mmap=3', '--stream-to=/dummy']
         );
-        proc.unref();
+        proc.stderr.setEncoding('utf8');
+        proc.stderr.on('data', (data) => updateStatus(data));
+        proc.on('close', () => updateStatus());
     }
 
     static stop() {
-        execSync(`pkill -SIGINT ${FILE}; exit 0`);
+        updateStatus();
     }
 
     static isWorking() {
-        return ! parseInt(execSync(`pgrep ${FILE} > /dev/null 2>&1; echo $?`).toString());
+        return ! parseInt(execSync(`pgrep ${RECORDER_BIN} > /dev/null 2>&1; echo $?`).toString());
     }
 
-    static getDirs() {
-        let parse = dirs => {
-            dirs = dirs.split('\n');
-            dirs.pop();
-            return dirs.map(item => ({
-                dirName: item,
-                name: new Date(item.replace('_', '') * 1000).toISOString().substr(0,19).replace('T', ' ')
-            }));
-        };
-
+    static getInfo() {
         return {
-            saved: parse(execSync(`ls ${FILES_PATH} | grep ^_ | sort -r`).toString()),
-            current: parse(execSync(`ls ${FILES_PATH} | grep -v ^_ | sort -r`).toString())
+            isWorking: this.isWorking(),
+            currentDir,
+            currentFile,
+            currentFps
         };
-    }
-
-    static saveDir(dirName) {
-        dirName = parseInt(dirName);
-        if (isNaN(dirName)) {
-            return;
-        }
-        if (this.isWorking()) {
-            let lastDirName = ''; // todo
-            if (lastDirName === dirName) {
-                // we cannot move directory which is being used by recorder right now
-                return;
-            }
-        }
-
-        execSync(`cd ${FILES_PATH} ; mv ${dirName} _${dirName} ; exit 0`)
     }
 }
+
+function updateStatus(data) {
+    clearTimeout(refreshTimeout);
+    refreshTimeout = setTimeout(
+        () => updateStatus(),
+        REFRESH_TIMEOUT * 1000
+    );
+
+    if (typeof data !== 'undefined') {
+        let matches = data.match(/^##(.+?)##(.+?)##(.+?)##/);
+        if (matches && currentDir != matches[1]) {
+            currentDir = matches[1];
+            currentFile = matches[2];
+            currentFps = matches[3];
+
+            return;
+        }
+    }
+
+    // wrong data was sent from recorder
+    // or currentFile and previousFile is equal
+    // or timeout was triggered
+    execSync(`pkill -SIGINT ${RECORDER_BIN}; exit 0`);
+    currentDir = '';
+    currentFile = '';
+    currentFps = '';
+}
+
