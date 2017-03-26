@@ -22,9 +22,11 @@ RUN cd && mkdir _node \
     && cp -r _node/$(ls _node/)/* /usr/local/ \
     && rm -rf _node
 
-ENV LD_LIBRARY_PATH /mjpg-streamer/
-COPY ./build/* /mjpg-streamer/
-RUN chmod +x /mjpg-streamer/*
+RUN apt-get update && apt-get install -y --no-install-recommends rsync
+
+ENV VIDEO_DEV /dev/video0
+COPY ./build/v4l2.deb /tmp
+RUN dpkg -i /tmp/v4l2.deb && rm -f /tmp/v4l2.deb
 
 RUN mkdir /recorder
 COPY ./server/package.json /recorder/

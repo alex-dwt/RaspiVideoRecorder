@@ -5,8 +5,8 @@
 
 MACHINE_ARCH=$(uname -m | cut -c1-3 | tr '[:lower:]' '[:upper:]')
 WORK_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-BUILD_DIR=$WORK_DIR/build
-MJPG_STREAMER_BIN=$BUILD_DIR/mjpg_streamer
+BUILD_DIR="$WORK_DIR/build"
+V4L2_DEB="$BUILD_DIR/v4l2.deb"
 CONTAINER_NAME=alex-dwt-raspi-video-recorder
 IMAGE_NAME=alex_dwt/raspi-video-recorder
 
@@ -47,7 +47,7 @@ function main {
 #########################
 function build {
     if [ ! -d "$BUILD_DIR" ]; then
-        mkdir $BUILD_DIR
+        mkdir "$BUILD_DIR"
         if [ $? -ne 0 ]
         then
           echo 'Can not create build directory. Abort!'
@@ -55,28 +55,31 @@ function build {
         fi
     fi
 
-    if [ ! -f $MJPG_STREAMER_BIN ]; then
-        echo 'Started compiling mjpg-streamer...'
+    if [ ! -f "$V4L2_DEB" ]; then
+        echo 'Started compiling v4l2-utils...'
 
         docker run --rm -it \
-            -v /opt:/opt:ro \
-            -v $BUILD_DIR:/mjpg-streamer-compiled \
-            sdhibit/rpi-raspbian /bin/bash -c "apt-get update && \
-            apt-get install -y cmake git libjpeg8-dev build-essential && \
-            git clone https://github.com/jacksonliam/mjpg-streamer.git && \
-            cd /mjpg-streamer/mjpg-streamer-experimental && \
-            make && \
-            chmod 666 *.so mjpg_streamer && \
-            cp *.so mjpg_streamer /mjpg-streamer-compiled/"
+            -v "$BUILD_DIR":/v4l2-compiled \
+            sdhibit/rpi-raspbian /bin/bash -c "apt-get update \
+            && apt-get install -y debhelper dh-autoreconf autotools-dev doxygen graphviz \
+                libasound2-dev libtool libjpeg-dev libqt4-dev libqt4-opengl-dev libudev-dev \
+                libx11-dev pkg-config udev git checkinstall \
+            && git clone https://github.com/alex-dwt/v4l-utils \
+            && cd v4l-utils && sed -i 's/1%{?dist}/1/g' v4l-utils.spec.in \
+            && ./bootstrap.sh && ./configure --without-jpeg && make -j4 \
+            && checkinstall --install=no  --fstrans=no -y \
+            && cp *deb /v4l2-compiled/v4l2.deb"
 
         if [ $? -ne 0 ]
         then
-          echo 'Can not compile mjpg-streamer. Abort!'
+          echo 'Can not compile v4l2-utils. Abort!'
           exit 1
         fi
 
-        echo 'Mjpg-streamer successfully compiled!'
+        echo 'v4l2-utils successfully compiled!'
     fi
+
+    return # todo
 
     echo 'Started creating image...'
     docker build -t "$IMAGE_NAME" "$WORK_DIR"
