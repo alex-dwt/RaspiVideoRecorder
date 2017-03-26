@@ -3,6 +3,11 @@
 # (c) Alexander Lukashevich <aleksandr.dwt@gmail.com>
 # For the full copyright and license information, please view the LICENSE file that was distributed with this source code.
 
+# choose desirable camera
+VIDEO_DEV=/dev/video0
+# enter desirable count of files to keep
+MAX_FILES_TO_KEEP=10
+
 MACHINE_ARCH=$(uname -m | cut -c1-3 | tr '[:lower:]' '[:upper:]')
 WORK_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 BUILD_DIR="$WORK_DIR/build"
@@ -79,8 +84,6 @@ function build {
         echo 'v4l2-utils successfully compiled!'
     fi
 
-    return # todo
-
     echo 'Started creating image...'
     docker build -t "$IMAGE_NAME" "$WORK_DIR"
     echo 'Done!'
@@ -109,10 +112,14 @@ function start {
     docker rm -f "$CONTAINER_NAME" >/dev/null 2>&1
 
     docker run -d \
+        -e "VIDEO_DEV=$VIDEO_DEV" \
+        -e "MAX_FILES_TO_KEEP=$MAX_FILES_TO_KEEP" \
         -p $1:80 \
         --device /dev/vchiq:/dev/vchiq \
         -v /opt/vc:/opt/vc:ro \
-        -v /tmp/images:/tmp/images \
+        -v /home/pi/RecordedData/Video:/RecordedData/Video \
+        -v /home/pi/RecordedData/Images:/RecordedData/Images \
+        -v /tmpfs/RaspiVideoRecorder:/RecordedData/Tmpfs \
         $(find /dev/ 2>/dev/null | egrep "/dev/video*" | xargs -I {} printf "--device={}:{} ") \
         --name "$CONTAINER_NAME" \
         "$IMAGE_NAME" >/dev/null 2>&1

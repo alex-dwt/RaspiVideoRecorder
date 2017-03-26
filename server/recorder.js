@@ -25,7 +25,7 @@ export default class {
         
         proc = spawn(
             RECORDER_BIN,
-            ['--stream-mmap=3', '--stream-to=/dummy']
+            ['-d', process.env.VIDEO_DEV, '--stream-mmap=3', '--stream-to=/dummy']
         );
         proc.stderr.setEncoding('utf8');
         proc.stderr.on('data', (data) => updateStatus(data));
@@ -58,11 +58,11 @@ function updateStatus(data) {
     );
 
     if (typeof data !== 'undefined') {
-        let matches = data.match(/^##(.+?)##(.+?)##(.+?)##/);
-        if (matches && currentDir != matches[1]) {
-            currentDir = matches[1];
-            currentFile = matches[2];
-            currentFps = matches[3];
+        let matches = data.match(/^(##(.+?)##(.+?)##(.+?)##\s)+$/);
+        if (matches && currentFile != matches[3]) {
+            currentDir = matches[2];
+            currentFile = matches[3];
+            currentFps = matches[4];
 
             return;
         }

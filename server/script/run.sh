@@ -5,7 +5,15 @@
 
 set -e
 
+# auto cleaner
 service cron start
-echo '*/3 * * * * /bin/bash -c "/recorder/script/cleaner.sh"' | crontab -
+echo "*/2 * * * * /bin/bash -c 'export MAX_FILES_TO_KEEP=$MAX_FILES_TO_KEEP ; /recorder/script/cleaner.sh'" | crontab -
+
+# recorder
+ldconfig
+v4l2-ctl -d "$VIDEO_DEV" -v width=1920,height=1080,pixelformat=MJPG
+
+# sync from Ram to Hdd
+/recorder/script/sync.sh &
 
 npm start

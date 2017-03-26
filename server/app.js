@@ -10,6 +10,7 @@ import express from 'express';
 import HttpException from './http_exception'
 import Recorder from './recorder'
 import Converter from './converter'
+import Explorer from './explorer'
 
 let app = express();
 
@@ -26,25 +27,25 @@ app.use(function(req, res, next) {
 });
 
 /**
- * Images recorder
+ * Files explorer
  */
 // mark dir as saved
 app.put('/recorder/save/:dir', (req, res, next) => {
-    Recorder.saveDir(req.params.dir);
+    // Recorder.saveDir(req.params.dir);
     res.json({ success: true });
 });
 // list with images directories
 app.get('/recorder/dirs', (req, res, next) => {
     res.json({ dirs: Recorder.getDirs() });
 });
+
+/**
+ * Recorder
+ */
 // status
-app.get('/recorder/status', (req, res, next) => {
-    res.json({ isWorking: Recorder.isWorking() });
+app.get('/recorder', (req, res, next) => {
+    res.json(Recorder.getInfo());
 });
-// take current photo
-// app.get('/recorder/photo', (req, res, next) => {
-//     res.json({ success: true });
-// });
 // start
 app.put('/recorder', (req, res, next) => {
 	Recorder.start();
@@ -57,7 +58,7 @@ app.delete('/recorder', (req, res, next) => {
 });
 
 /**
- * Images to video converter
+ * Converter
  */
 // status
 app.get('/converter', (req, res, next) => {

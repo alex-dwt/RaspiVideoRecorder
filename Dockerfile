@@ -24,9 +24,11 @@ RUN cd && mkdir _node \
 
 RUN apt-get update && apt-get install -y --no-install-recommends rsync
 
-ENV VIDEO_DEV /dev/video0
-COPY ./build/v4l2.deb /tmp
+COPY ./build/v4l2.deb /tmp/
 RUN dpkg -i /tmp/v4l2.deb && rm -f /tmp/v4l2.deb
+
+ENV VIDEO_DEV /dev/video0
+ENV MAX_FILES_TO_KEEP 10
 
 RUN mkdir /recorder
 COPY ./server/package.json /recorder/
