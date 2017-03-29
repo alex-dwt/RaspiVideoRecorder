@@ -30,13 +30,14 @@ app.use(function(req, res, next) {
  * Files explorer
  */
 // mark dir as saved
-app.put('/recorder/save/:dir', (req, res, next) => {
-    // Recorder.saveDir(req.params.dir);
-    res.json({ success: true });
+app.put('/explorer/save/:dir', (req, res, next) => {
+    res.json({
+    	success: Explorer.saveDir(req.params.dir)
+    });
 });
 // list with images directories
-app.get('/recorder/dirs', (req, res, next) => {
-    res.json({ dirs: Recorder.getDirs() });
+app.get('/explorer/dirs', (req, res, next) => {
+    res.json(Explorer.getDirs());
 });
 
 /**

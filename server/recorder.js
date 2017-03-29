@@ -22,7 +22,7 @@ export default class {
         }
 
         updateStatus();
-        
+
         proc = spawn(
             RECORDER_BIN,
             ['-d', process.env.VIDEO_DEV, '--stream-mmap=3', '--stream-to=/dummy']
@@ -41,12 +41,20 @@ export default class {
     }
 
     static getInfo() {
-        return {
-            isWorking: this.isWorking(),
-            currentDir,
-            currentFile,
-            currentFps
-        };
+        let file = currentFile;
+        {
+            let pos = file.lastIndexOf('_');
+            let currentFile = pos !== -1
+                ? file.substring(0, pos)
+                : file;
+
+            return {
+                isWorking: this.isWorking(),
+                currentDir,
+                currentFile,
+                currentFps
+            };
+        }
     }
 }
 

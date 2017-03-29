@@ -6,7 +6,7 @@
 
 import {execSync} from 'child_process';
 
-const FILES_PATH = '/tmp/images';
+const FILES_PATH = '/RecordedData/Images';
 
 export default class {
     static getDirs() {
@@ -20,24 +20,27 @@ export default class {
         };
 
         return {
-            saved: parse(execSync(`ls ${FILES_PATH} | grep ^_ | sort -r`).toString()),
-            current: parse(execSync(`ls ${FILES_PATH} | grep -v ^_ | sort -r`).toString())
+            saved: parse(execSync(`ls -r ${FILES_PATH} 2>/dev/null | grep "^_[0-9]\\+$" ; exit 0`).toString()),
+            current: parse(execSync(`ls -r ${FILES_PATH} 2>/dev/null | grep "^[0-9]\\+$" ; exit 0`).toString())
         };
     }
 
     static saveDir(dirName) {
         dirName = parseInt(dirName);
         if (isNaN(dirName)) {
-            return;
-        }
-        if (this.isWorking()) {
-            let lastDirName = ''; // todo
-            if (lastDirName === dirName) {
-                // we cannot move directory which is being used by recorder right now
-                return;
-            }
+            return false;
         }
 
-        execSync(`cd ${FILES_PATH} ; mv ${dirName} _${dirName} ; exit 0`)
+        // if (this.isWorking()) {
+        //     let lastDirName = ''; // todo
+        //     if (lastDirName === dirName) {
+        //         // we cannot move directory which is being used by recorder right now
+        //         return;
+        //     }
+        // }
+
+        execSync(`cd ${FILES_PATH} ; mv ${dirName} _${dirName} ; exit 0`);
+
+        return true;
     }
 }
