@@ -11,7 +11,7 @@ const REFRESH_TIMEOUT = 15;
 
 let refreshTimeout;
 let proc;
-let currentDir = '';
+// let currentDir = '';
 let currentFile = '';
 let currentFps = '';
 
@@ -50,7 +50,7 @@ export default class {
 
             return {
                 isWorking: this.isWorking(),
-                currentDir,
+                // currentDir,
                 currentFile,
                 currentFps
             };
@@ -68,7 +68,7 @@ function updateStatus(data) {
     if (typeof data !== 'undefined') {
         let matches = data.match(/^(##(.+?)##(.+?)##(.+?)##\s)+$/);
         if (matches && currentFile != matches[3]) {
-            currentDir = matches[2];
+            // currentDir = matches[2];
             currentFile = matches[3];
             currentFps = matches[4];
 
@@ -80,7 +80,7 @@ function updateStatus(data) {
     // or currentFile and previousFile is equal
     // or timeout was triggered
     execSync(`pkill -SIGINT ${RECORDER_BIN}; exit 0`);
-    currentDir = '';
+    // currentDir = '';
     currentFile = '';
     currentFps = '';
 }

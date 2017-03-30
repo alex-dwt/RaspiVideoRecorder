@@ -10,18 +10,40 @@ const FILES_PATH = '/RecordedData/Images';
 
 export default class {
     static getDirs() {
-        let parse = dirs => {
+        let parse = (dirs, checkCanBeDeleted, checkCanBeSaved) => {
             dirs = dirs.split('\n');
             dirs.pop();
-            return dirs.map(item => ({
-                dirName: item,
-                name: new Date(item.replace('_', '') * 1000).toISOString().substr(0,19).replace('T', ' ')
-            }));
+
+            let canBeDeleted = null;
+            if (checkCanBeDeleted) {
+                canBeDeleted = true; // todo
+            }
+
+            let canBeSaved = null;
+            if (checkCanBeSaved) {
+                canBeSaved = true; // todo
+            }
+
+            return dirs.map(item => (Object.assign(
+                {
+                    dirName: item,
+                    name: new Date(item.replace('_', '') * 1000).toISOString().substr(0,19).replace('T', ' ')
+                },
+                canBeSaved !== null ? {canBeSaved} : {},
+                canBeDeleted !== null ? {canBeDeleted} : {}
+            )));
         };
 
         return {
-            saved: parse(execSync(`ls -r ${FILES_PATH} 2>/dev/null | grep "^_[0-9]\\+$" ; exit 0`).toString()),
-            current: parse(execSync(`ls -r ${FILES_PATH} 2>/dev/null | grep "^[0-9]\\+$" ; exit 0`).toString())
+            saved: parse(
+                execSync(`ls -r ${FILES_PATH} 2>/dev/null | grep "^_[0-9]\\+$" ; exit 0`).toString(),
+                true
+            ),
+            current: parse(
+                execSync(`ls -r ${FILES_PATH} 2>/dev/null | grep "^[0-9]\\+$" ; exit 0`).toString(),
+                false,
+                true
+            )
         };
     }
 
