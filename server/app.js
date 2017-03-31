@@ -30,13 +30,19 @@ app.use(function(req, res, next) {
  * Files explorer
  */
 // mark dir as saved
-app.put('/explorer/save/:dir', (req, res, next) => {
+app.put('/explorer/:dir', (req, res, next) => {
     res.json({
     	success: Explorer.saveDir(req.params.dir)
     });
 });
+// remove dir
+app.delete('/explorer/:dir', (req, res, next) => {
+    res.json({
+    	success: Explorer.removeDir(req.params.dir)
+    });
+});
 // list with images directories
-app.get('/explorer/dirs', (req, res, next) => {
+app.get('/explorer', (req, res, next) => {
     res.json(Explorer.getDirs());
 });
 

@@ -53,15 +53,17 @@ export default class {
             return false;
         }
 
-        // if (this.isWorking()) {
-        //     let lastDirName = ''; // todo
-        //     if (lastDirName === dirName) {
-        //         // we cannot move directory which is being used by recorder right now
-        //         return;
-        //     }
-        // }
+        // todo
 
         execSync(`cd ${FILES_PATH} ; mv ${dirName} _${dirName} ; exit 0`);
+
+        return true;
+    }
+
+    static removeDir(dirName) {
+        execSync(`cd ${FILES_PATH} ; rm -rf ${dirName} ; exit 0`);
+
+        // todo
 
         return true;
     }
