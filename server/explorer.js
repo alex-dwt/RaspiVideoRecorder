@@ -7,6 +7,7 @@
 import {execSync} from 'child_process';
 
 const FILES_PATH = '/RecordedData/Images';
+const TMP_IMAGES_PATH = '/RecordedData/Tmpfs';
 
 export default class {
     static getDirs() {
@@ -14,23 +15,13 @@ export default class {
             dirs = dirs.split('\n');
             dirs.pop();
 
-            let canBeDeleted = null;
-            if (checkCanBeDeleted) {
-                canBeDeleted = true; // todo
-            }
-
-            let canBeSaved = null;
-            if (checkCanBeSaved) {
-                canBeSaved = true; // todo
-            }
-
             return dirs.map(item => (Object.assign(
                 {
                     dirName: item,
                     name: new Date(item.replace('_', '') * 1000).toISOString().substr(0,19).replace('T', ' ')
                 },
-                canBeSaved !== null ? {canBeSaved} : {},
-                canBeDeleted !== null ? {canBeDeleted} : {}
+                checkCanBeSaved ? {canBeSaved: isDirCanBeSaved(item)} : {},
+                checkCanBeDeleted ? {canBeDeleted: isDirCanBeDeleted(item)} : {}
             )));
         };
 
@@ -53,18 +44,35 @@ export default class {
             return false;
         }
 
-        // todo
+        if (!isDirCanBeSaved(dirName)) {
+            return false;
+        }
 
         execSync(`cd ${FILES_PATH} ; mv ${dirName} _${dirName} ; exit 0`);
 
         return true;
     }
 
-    static removeDir(dirName) {
-        execSync(`cd ${FILES_PATH} ; rm -rf ${dirName} ; exit 0`);
+    static deleteDir(dirName) {
+        if (!isDirCanBeDeleted(dirName)) {
+            return false;
+        }
 
-        // todo
+        execSync(`cd ${FILES_PATH} ; rm -rf ${dirName} ; exit 0`);
 
         return true;
     }
+}
+
+function isDirCanBeDeleted(dirName) {
+    return true; //todo
+}
+
+function isDirCanBeSaved(dirName) {
+    dirName = parseInt(dirName);
+    if (isNaN(dirName)) {
+        return false;
+    }
+
+    return execSync(`ls ${TMP_IMAGES_PATH} | grep ${dirName} | wc -l ; exit 0`).toString() == 0;
 }

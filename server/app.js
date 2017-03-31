@@ -38,7 +38,7 @@ app.put('/explorer/:dir', (req, res, next) => {
 // remove dir
 app.delete('/explorer/:dir', (req, res, next) => {
     res.json({
-    	success: Explorer.removeDir(req.params.dir)
+    	success: Explorer.deleteDir(req.params.dir)
     });
 });
 // list with images directories
