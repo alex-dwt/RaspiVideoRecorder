@@ -8,8 +8,8 @@ cd "$PATH_IN"
 
 while true
 do
-    sleep 5
-    rsync -ru . "$PATH_OUT"
+    sleep 3
+    rsync --remove-source-files -ru . "$PATH_OUT"
     pgrep "$RECORDER_BIN" > /dev/null 2>&1
     if [ $? -eq 0 ] ; then
         # if recorder is working - remove all except for the last
