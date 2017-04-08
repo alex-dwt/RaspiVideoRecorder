@@ -322,7 +322,7 @@ int main(int argc, char** argv) {
               break;
         }
 
-        char filenames[200][FPS];
+        char filenames[400][FPS];
         int filesCount = 0;
         while ((ent = readdir (dir)) != NULL) {
             char *fileName;
@@ -348,7 +348,7 @@ int main(int argc, char** argv) {
             fp = fopen(fileFullPath, "r");
 
            if (fp == NULL) {
-              fprintf(stderr, "Failed to open image to read\n");
+              fprintf(stderr, "Failed to open image to read: %s\n", fileFullPath);
               exit(1);
            }
 

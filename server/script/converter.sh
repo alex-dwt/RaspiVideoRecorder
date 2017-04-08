@@ -4,51 +4,59 @@
 # For the full copyright and license information, please view the LICENSE file that was distributed with this source code.
 
 FPS=25
-TMP_DIR=/tmp/recorder
+OUTPUT_DIR=/RecordedData/Video
+CONVERTER_BIN=/recorder/converter/converter
+MKV_BIN=mkvmerge
+
+TMP_DIR=/tmp/converter
+TMP_FRAMES_DIR="$TMP_DIR/frames"
+
 SOURCE_DIR=$1
+OUTPUT_FILE_NAME=$2
 
 function main()
 {
 	if [ -z "$SOURCE_DIR" ]; then
 		printf 'Specify input dir\n'
-		exit 1
+		quit 1
+	fi
+	if [ -z "$OUTPUT_FILE_NAME" ]; then
+		printf 'Specify output file name\n'
+		quit 1
 	fi
 
 	secs=$(ls "$SOURCE_DIR" | sed -e 's/\(.*\)_[0-9]\+.jpg/\1/g' | uniq)
 
 	if [ -z "$secs" ]; then
-		printf 'No pictures\n'
-		exit 0
+		printf 'No seconds\n'
+		quit 0
 	fi
 
 	secs=(${secs//\n/ })
 	secsCount=${#secs[@]}
 
-	printf "Founded $secsCount seconds\n\n"
+#	printf "Founded $secsCount seconds\n\n"
 
 	rm -rf "$TMP_DIR" 2> /dev/null
-	mkdir "$TMP_DIR"
-	cd "$TMP_DIR"
+	mkdir -p "$TMP_FRAMES_DIR"
 
 	local i=0
 	for (( ; i < $secsCount; i++ ));
 	do
 		sec=${secs[$i]}
 
-		printf "Process second #$i: '$sec'\n"
+#		printf "Process second #$i: '$sec'\n"
 
-		cd "$TMP_DIR"
+		cd "$TMP_FRAMES_DIR"
 		mkdir $i
 		cd $i
 
-#		ls $SOURCE_DIR | grep $sec | sort -h
 		frames=$(ls -v "$SOURCE_DIR" | grep "$sec" | sed -e 's/.*_\([0-9]\+\).jpg/\1/g')
 
-#		frames=$(ls $SOURCE_DIR | grep $sec | sed -e 's/.*_picture_\(.*\)/\1/g')
 		frames=(${frames//\n/ })
 		framesCount=${#frames[@]}
 
-		printf "Founded ${#frames[@]} frames\n"
+#		printf "Founded ${#frames[@]} frames\n"
 
 		copyFrames
 
@@ -56,8 +64,26 @@ function main()
 
 		increaseFrames
 
-		printf "Second completed\n\n"
+		printf "%d%%\n" "$(( (i + 1) * 100 / $secsCount ))"
 	done
+
+	"$CONVERTER_BIN" "$TMP_FRAMES_DIR" "$TMP_DIR/video.avi"
+    if [ "$?" -ne 0 ]; then
+		>&2 echo "Error creating video file from images"
+		quit 1
+	fi
+
+    printf "99%%\n"
+
+	"$MKV_BIN" -o "$OUTPUT_DIR/$OUTPUT_FILE_NAME.mkv" "$TMP_DIR/video.avi" > /dev/null 2>&1
+    if [ "$?" -ne 0 ]; then
+		>&2 echo "Error creating final video file"
+		quit 1
+	fi
+
+    printf "100%%\n"
+
+    quit 0
 }
 
 
@@ -65,7 +91,7 @@ function main()
 
 function copyFrames()
 {
-	printf "Copy $FPS (or less) frames to temp location\n"
+#	printf "Copy $FPS (or less) frames to temp location\n"
 
 	local i=0
 	local num=1
@@ -88,7 +114,7 @@ function increaseFrames()
 		return
 	fi
 
-	printf "Increase to $FPS frames\n"
+#	printf "Increase to $FPS frames\n"
 
 	local j=$(( (($count + $framesCount - 1) / $framesCount) ))
 
@@ -122,6 +148,14 @@ function writeText()
 	printf "Write text \"$text\" on frames\n"
 
 	find . -type f | xargs -n 1 -P 4 -I {} bash -c "convert '{}' -quality 80 -pointsize 56 -fill '#0008' -draw 'rectangle 1345,980,1890,1050' -fill white -draw \"text 1360,1035 '$text'\" '{}'"
+}
+
+
+
+function quit()
+{
+    rm -rf "$TMP_DIR" 2> /dev/null
+    exit "$1"
 }
 
 
