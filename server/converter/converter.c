@@ -74,7 +74,7 @@ char *err2str(int err) {
 }
 
 void eos_callback(void *userdata, COMPONENT_T *comp, OMX_U32 data) {
-    fprintf(stderr, "Got eos event\n");
+//    fprintf(stderr, "Got eos event\n");
 }
 
 void error_callback(void *userdata, COMPONENT_T *comp, OMX_U32 data) {
@@ -100,13 +100,13 @@ OMX_ERRORTYPE read_into_buffer_and_empty(FILE *fp,
     int buff_size = buff_header->nAllocLen;
     int nread = fread(buff_header->pBuffer, 1, buff_size, fp);
 
-    printf("Read %d\n", nread);
+//    printf("Read %d\n", nread);
 
     buff_header->nFilledLen = nread;
     *toread -= nread;
 
     if (*toread <= 0) {
-		printf("Setting EOS on input\n");
+//		printf("Setting EOS on input\n");
 		buff_header->nFlags |= OMX_BUFFERFLAG_EOS;
     }
 
@@ -144,7 +144,7 @@ void setup_decodeComponent(
     printState(ilclient_get_handle(*decodeComponent));
 
     // must be before we enable buffers
-    printf("Setting image decoder format\n");
+//    printf("Setting image decoder format\n");
     OMX_IMAGE_PARAM_PORTFORMATTYPE imagePortFormat;
 
     memset(&imagePortFormat, 0, sizeof(OMX_IMAGE_PARAM_PORTFORMATTYPE));
@@ -211,7 +211,7 @@ void setup_renderComponent(
 int main(int argc, char** argv) {
 
     if (argc != 3) {
-        printf("Specify input dir path and output file path\n");
+        fprintf(stderr, "Specify input dir path and output file path\n");
         exit(1);
     }
 
@@ -221,7 +221,7 @@ int main(int argc, char** argv) {
 	FILE *outf;
   	outf = fopen(argv[2], "w");
    if (outf == NULL) {
-      printf("Failed open file for writing video\n");
+      fprintf(stderr, "Failed open file for writing video\n");
       exit(1);
    }
 
@@ -245,14 +245,14 @@ int main(int argc, char** argv) {
 
     handle = ilclient_init();
     if (handle == NULL) {
-	fprintf(stderr, "IL client init failed\n");
-	exit(1);
+        fprintf(stderr, "IL client init failed\n");
+        exit(1);
     }
 
     if (OMX_Init() != OMX_ErrorNone) {
-	ilclient_destroy(handle);
-	fprintf(stderr, "OMX init failed\n");
-	exit(1);
+        ilclient_destroy(handle);
+        fprintf(stderr, "OMX init failed\n");
+        exit(1);
     }
 
     ilclient_set_error_callback(handle,				error_callback,				NULL);
@@ -268,8 +268,8 @@ int main(int argc, char** argv) {
 
     err = ilclient_change_component_state(decodeComponent,					  OMX_StateExecuting);
     if (err < 0) {
-	fprintf(stderr, "Couldn't change decode state to Executing\n");
-	exit(1);
+        fprintf(stderr, "Couldn't change decode state to Executing\n");
+        exit(1);
     }
     printState(ilclient_get_handle(decodeComponent));
 
@@ -319,7 +319,7 @@ int main(int argc, char** argv) {
             fp = fopen(fileFullPath, "r");
 
            if (fp == NULL) {
-              printf("Failed to open image to read\n");
+              fprintf(stderr, "Failed to open image to read\n");
               exit(1);
            }
 
@@ -343,7 +343,7 @@ int main(int argc, char** argv) {
                     // we have to re-read this first block.
                     // Broadcom bug?
                     if (toread <= 0) {
-                        printf("Rewinding\n");
+//                        printf("Rewinding\n");
                         // wind back to start and repeat
                         fp = freopen(fileFullPath, "r", fp);
                         toread = get_file_size(fileFullPath);
@@ -353,7 +353,7 @@ int main(int argc, char** argv) {
                 // wait for first input block to set params for output port
                 ilclient_wait_for_event(decodeComponent, 					OMX_EventPortSettingsChanged, 					321, 0, 0, 1,					ILCLIENT_EVENT_ERROR | ILCLIENT_PARAMETER_CHANGED, 					5);
 
-                printf("Port settings changed\n");
+//                printf("Port settings changed\n");
 
 
                 TUNNEL_T tunnel;
@@ -362,7 +362,7 @@ int main(int argc, char** argv) {
                     fprintf(stderr, "Error setting up tunnel %X\n", err);
                     exit(1);
                 } else {
-                    printf("Tunnel set up ok\n");
+//                    printf("Tunnel set up ok\n");
                 }
 
                // Okay to go back to processing data
@@ -400,11 +400,11 @@ int main(int argc, char** argv) {
                 // do we have an output buffer that has been filled?
                 buff_header = 			ilclient_get_output_buffer(renderComponent,						  201,						  0 /* no block */);
                 if (buff_header != NULL) {
-                    printf("Write output to file %d...\n", buff_header->nFilledLen);
+//                    printf("Write output to file %d...\n", buff_header->nFilledLen);
                     fwrite(buff_header->pBuffer, 1, buff_header->nFilledLen, outf);
 
                     if (buff_header->nFlags & OMX_BUFFERFLAG_EOS) {
-                        printf("Got EOS, but very early!\n");
+//                        printf("Got EOS, but very early!\n");
                     }
 
                     OMX_FillThisBuffer(ilclient_get_handle(renderComponent), 					   buff_header);
@@ -415,15 +415,15 @@ int main(int argc, char** argv) {
 
             int done = 0;
             while ( !done ) {
-                printf("Getting last output buffers\n");
+//                printf("Getting last output buffers\n");
                 buff_header = 			ilclient_get_output_buffer(renderComponent,						   201,						   1 /* block */);
 
                 if (buff_header != NULL) {
-                    printf("Write output to file %d...\n", buff_header->nFilledLen);
+//                    printf("Write output to file %d...\n", buff_header->nFilledLen);
                     fwrite(buff_header->pBuffer, 1, buff_header->nFilledLen, outf);
 
                     if (buff_header->nFlags & OMX_BUFFERFLAG_EOS) {
-                        printf("Got EOS\n");
+//                        printf("Got EOS\n");
                         done = 1;
                     }
                 }
