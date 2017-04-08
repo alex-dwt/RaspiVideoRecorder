@@ -72,7 +72,7 @@ function copyFrames()
 	for (( ; i < $framesCount && i < $FPS; i++ ));
 	do
 		frame=${frames[$i]}
-		cp "$SOURCE_DIR/${sec}_${frame}.jpg" "$num"
+		ln -s "$SOURCE_DIR/${sec}_${frame}.jpg" "$num"
 		num=$((num + 1))
 	done
 }
@@ -101,7 +101,7 @@ function increaseFrames()
 		for (( i=0; i < j; i++ ));
 		do
 			next=${next}_
-			cp "$frame" "$next"
+			ln -s "$frame" "$next"
 			((total++))
 			if [ $total -eq $FPS ]; then
 				break 2
