@@ -5,11 +5,16 @@
 
 FPS=25
 TMP_DIR=/tmp/recorder
-SOURCE_DIR=/opt/vc/my/pic/
+SOURCE_DIR=$1
 
-function process()
+function main()
 {
-	secs=$(ls $SOURCE_DIR | sed -e 's/\(.*\)_picture_.*/\1/g' | uniq)
+	if [ -z "$SOURCE_DIR" ]; then
+		printf 'Specify input dir\n'
+		exit 1
+	fi
+
+	secs=$(ls "$SOURCE_DIR" | sed -e 's/\(.*\)_[0-9]\+.jpg/\1/g' | uniq)
 
 	if [ -z "$secs" ]; then
 		printf 'No pictures\n'
@@ -36,7 +41,10 @@ function process()
 		mkdir $i
 		cd $i
 
-		frames=$(ls $SOURCE_DIR | grep $sec | sed -e 's/.*_picture_\(.*\)/\1/g')
+#		ls $SOURCE_DIR | grep $sec | sort -h
+		frames=$(ls -v "$SOURCE_DIR" | grep "$sec" | sed -e 's/.*_\([0-9]\+\).jpg/\1/g')
+
+#		frames=$(ls $SOURCE_DIR | grep $sec | sed -e 's/.*_picture_\(.*\)/\1/g')
 		frames=(${frames//\n/ })
 		framesCount=${#frames[@]}
 
@@ -44,12 +52,11 @@ function process()
 
 		copyFrames
 
-		writeText
+		#writeText
 
 		increaseFrames
 
 		printf "Second completed\n\n"
-	 
 	done
 }
 
@@ -65,8 +72,8 @@ function copyFrames()
 	for (( ; i < $framesCount && i < $FPS; i++ ));
 	do
 		frame=${frames[$i]}
-		cp "$SOURCE_DIR/${sec}_picture_${frame}" "$num"
-		num=${num}1
+		cp "$SOURCE_DIR/${sec}_${frame}.jpg" "$num"
+		num=$((num + 1))
 	done
 }
 
@@ -100,7 +107,7 @@ function increaseFrames()
 				break 2
 			fi
 		done
-		frame=${frame}1
+		frame=$((frame + 1))
 		next=$frame
 	done
 }
@@ -119,4 +126,4 @@ function writeText()
 
 
 
-process
+main
