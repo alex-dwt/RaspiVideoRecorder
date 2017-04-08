@@ -78,7 +78,7 @@ void eos_callback(void *userdata, COMPONENT_T *comp, OMX_U32 data) {
 }
 
 void error_callback(void *userdata, COMPONENT_T *comp, OMX_U32 data) {
-    fprintf(stderr, "OMX error %s\n", err2str(data));
+ //   fprintf(stderr, "OMX error %s\n", err2str(data));
 }
 
 int get_file_size(char *fname) {
@@ -193,7 +193,7 @@ void setup_renderComponent(
 		exit(1);
     }
 
-    rportdef.format.video.xFramerate   = 25 << 16;   // WARNING! IT DOESN WORK - FPS is alwas 25 despite this parameter
+    rportdef.format.video.xFramerate   = 25 << 16;   // WARNING! IT DOESN'T WORK - FPS is always 25 despite this parameter
     rportdef.format.video.eColorFormat = OMX_COLOR_FormatUnused;
     rportdef.format.video.eCompressionFormat = OMX_VIDEO_CodingAVC;
     rportdef.format.video.nBitrate     = 8000000;
@@ -275,8 +275,37 @@ int main(int argc, char** argv) {
 
 
     //************************************************
-    //*********************** Process files
-    //************
+    //************ Get number of seconds
+    //*********
+    int numberOfSeconds = 0;
+    char *dirPath;
+    asprintf(&dirPath, "%s/", argv[1]);
+    DIR *dir;
+    struct dirent *ent;
+    if ((dir = opendir (dirPath)) == NULL) {
+        fprintf(stderr, "Can not open input dir\n");
+        exit(1);
+    }
+
+    while ((ent = readdir (dir)) != NULL) {
+        char *fileName;
+        asprintf(&fileName, "%s", ent->d_name);
+        if (strcmp(fileName, ".") != 0 && strcmp(fileName, "..") != 0) {
+            numberOfSeconds++;
+        }
+    }
+    closedir (dir);
+
+    if (numberOfSeconds == 0) {
+        fprintf(stderr, "No seconds to process\n");
+        exit(1);
+    }
+//    printf("Number of seconds to process: %d\n", numberOfSeconds);
+
+
+    //************************************************
+    //************ Process seconds one by one
+    //*********
     int fileSize = 0;
     FILE *fp;
     int toread;
@@ -313,7 +342,7 @@ int main(int argc, char** argv) {
         for (; j < filesCount; j++) {
             char *fileFullPath;
             asprintf(&fileFullPath, "%s%s", dirPath, filenames[j]);
-            printf ("Process file: %s\n", fileFullPath);
+//            printf ("Process file: %s\n", fileFullPath);
 
 
             fp = fopen(fileFullPath, "r");
@@ -432,14 +461,16 @@ int main(int argc, char** argv) {
            }
 
 
-            printf("One more file has been processed\n");
+//            printf("One more file has been processed\n");
             fclose(fp);
         }
 
-        printf("One more second has been processed\n");
-
         second++;
+
+        printf("%d%%\n", second * 100 / numberOfSeconds);
     }
 
 	fclose(outf);
+
+	exit(0);
 }
