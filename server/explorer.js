@@ -5,6 +5,7 @@
  */
 
 import {execSync} from 'child_process';
+import Converter from './converter'
 
 const FILES_PATH = '/RecordedData/Images';
 const TMP_IMAGES_PATH = '/RecordedData/Tmpfs';
@@ -48,7 +49,7 @@ export default class {
             return false;
         }
 
-        execSync(`cd ${FILES_PATH} ; mv ${dirName} _${dirName} ; exit 0`);
+        execSync(`cd ${FILES_PATH} ; mv ${dirName} _${dirName} ; touch _${dirName}/ready ; exit 0`);
 
         return true;
     }
@@ -64,10 +65,17 @@ export default class {
     }
 }
 
+/**
+ * We can remove saved dirs only if "ConverterDaemon" is off
+ */
 function isDirCanBeDeleted(dirName) {
-    return true; //todo
+    return !Converter.isWorking();
 }
 
+/**
+ * If directory with this name has been already removed from Tmpfs directory
+ * it means that "Recorder" is not using it anymore and therefore we can remove it
+ */
 function isDirCanBeSaved(dirName) {
     dirName = parseInt(dirName);
     if (isNaN(dirName)) {

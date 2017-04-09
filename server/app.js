@@ -69,14 +69,16 @@ app.delete('/recorder', (req, res, next) => {
  */
 // status
 app.get('/converter', (req, res, next) => {
-	res.json({ success: true });
+    res.json(Converter.getInfo());
 });
 // start
 app.put('/converter', (req, res, next) => {
+    Converter.start();
 	res.json({ success: true });
 });
 // stop
 app.delete('/converter', (req, res, next) => {
+    Converter.stop();
 	res.json({ success: true });
 });
 

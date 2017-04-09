@@ -116,6 +116,7 @@ function start {
         -e "MAX_FILES_TO_KEEP=$MAX_FILES_TO_KEEP" \
         -p $1:80 \
         --device /dev/vchiq:/dev/vchiq \
+        -v /etc/localtime:/etc/localtime:ro \
         -v /opt/vc:/opt/vc:ro \
         -v /home/pi/RecordedData/Video:/RecordedData/Video \
         -v /home/pi/RecordedData/Images:/RecordedData/Images \

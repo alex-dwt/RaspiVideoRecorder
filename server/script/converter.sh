@@ -24,7 +24,7 @@ function main()
 		quit 1
 	fi
 
-	secs=$(ls "$SOURCE_DIR" | sed -e 's/\(.*\)_[0-9]\+.jpg/\1/g' | uniq)
+	secs=$(ls "$SOURCE_DIR" | sed -e 's/\(.*\)_[0-9]\+.jpg/\1/g' | uniq | egrep "[0-9]{4}(-[0-9]{2}){2}_[0-9]{2}(:[0-9]{2}){2}")
 
 	if [ -z "$secs" ]; then
 		printf 'No seconds\n'

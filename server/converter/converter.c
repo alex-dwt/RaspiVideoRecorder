@@ -468,6 +468,7 @@ int main(int argc, char** argv) {
         second++;
 
         printf("%d%%\n", second * 100 / numberOfSeconds);
+        fflush(stdout);
     }
 
 	fclose(outf);
