@@ -1,10 +1,9 @@
-#! /bin/bash
+#!/usr/bin/env bash
 # This file is part of the RaspiVideoRecorder package.
 # (c) Alexander Lukashevich <aleksandr.dwt@gmail.com>
 # For the full copyright and license information, please view the LICENSE file that was distributed with this source code.
 
 FPS=25
-OUTPUT_DIR=/RecordedData/Video
 CONVERTER_BIN=/recorder/converter/converter
 MKV_BIN=mkvmerge
 
@@ -12,7 +11,7 @@ TMP_DIR=/tmp/converter
 TMP_FRAMES_DIR="$TMP_DIR/frames"
 
 SOURCE_DIR=$1
-OUTPUT_FILE_NAME=$2
+OUTPUT_FILE_PATH=$2
 
 function main()
 {
@@ -20,8 +19,8 @@ function main()
 		printf 'Specify input dir\n'
 		quit 1
 	fi
-	if [ -z "$OUTPUT_FILE_NAME" ]; then
-		printf 'Specify output file name\n'
+	if [ -z "$OUTPUT_FILE_PATH" ]; then
+		printf 'Specify output file path\n'
 		quit 1
 	fi
 
@@ -41,11 +40,15 @@ function main()
 	mkdir -p "$TMP_FRAMES_DIR"
 
 	local i=0
+	local trackTitle="No title"
 	for (( ; i < $secsCount; i++ ));
 	do
 		sec=${secs[$i]}
 
 #		printf "Process second #$i: '$sec'\n"
+        if [ "$i" -eq 0 ]; then
+            trackTitle=$(echo "$sec ($secsCount sec.)" | tr '_' ' ')
+        fi
 
 		cd "$TMP_FRAMES_DIR"
 		mkdir $i
@@ -67,7 +70,8 @@ function main()
 		printf "%d%%\n" "$(( (i + 1) * 100 / $secsCount ))"
 	done
 
-	"$CONVERTER_BIN" "$TMP_FRAMES_DIR" "$TMP_DIR/video.avi"
+	"$CONVERTER_BIN" "$TMP_FRAMES_DIR" "$TMP_DIR/video.avi" &
+	wait "$!"
     if [ "$?" -ne 0 ]; then
 		>&2 echo "Error creating video file from images"
 		quit 1
@@ -75,7 +79,8 @@ function main()
 
     printf "99%%\n"
 
-	"$MKV_BIN" -o "$OUTPUT_DIR/$OUTPUT_FILE_NAME.mkv" "$TMP_DIR/video.avi" > /dev/null 2>&1
+	"$MKV_BIN" --title "$trackTitle" -o "$OUTPUT_FILE_PATH" "$TMP_DIR/video.avi" > /dev/null 2>&1 &
+    wait "$!"
     if [ "$?" -ne 0 ]; then
 		>&2 echo "Error creating final video file"
 		quit 1
@@ -154,10 +159,14 @@ function writeText()
 
 function quit()
 {
+    pkill -f "$CONVERTER_BIN" 2> /dev/null
+    pkill "$MKV_BIN" 2> /dev/null
+
     rm -rf "$TMP_DIR" 2> /dev/null
     exit "$1"
 }
 
 
+trap "quit 1" SIGINT SIGTERM
 
 main

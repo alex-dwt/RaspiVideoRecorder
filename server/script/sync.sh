@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# This file is part of the RaspiVideoRecorder package.
+# (c) Alexander Lukashevich <aleksandr.dwt@gmail.com>
+# For the full copyright and license information, please view the LICENSE file that was distributed with this source code.
 
 PATH_IN=/RecordedData/Tmpfs
 PATH_OUT=/RecordedData/Images
