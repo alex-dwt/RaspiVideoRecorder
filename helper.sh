@@ -90,13 +90,12 @@ function build {
 
     echo 'Compiling converter once...'
     docker rm -f "$CONTAINER_NAME" >/dev/null 2>&1
-    docker run -d \
+    docker run \
         -v /opt/vc:/opt/vc:ro \
-        --name "$CONTAINER_NAME" \
-        "$IMAGE_NAME"
-    docker exec -it "$CONTAINER_NAME" /bin/bash -c 'cd converter && make'
-    docker commit "$CONTAINER_NAME" "$IMAGE_NAME"
-    docker rm -f "$CONTAINER_NAME" >/dev/null 2>&1
+        --name "$CONTAINER_NAME" "$IMAGE_NAME" \
+        /bin/bash -c 'cd converter && make'
+    docker commit --change='CMD [ "/bin/bash", "/recorder/script/run.sh" ]' "$CONTAINER_NAME" "$IMAGE_NAME"
+    docker rm -f "$CONTAINER_NAME"
     echo 'Done!'
 }
 
