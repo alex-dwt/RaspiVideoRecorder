@@ -50,9 +50,9 @@ app.get('/explorer', (req, res, next) => {
  * Recorder
  */
 // status
-app.get('/recorder', (req, res, next) => {
-    res.json(Recorder.getInfo());
-});
+// app.get('/recorder', (req, res, next) => {
+//     res.json(Recorder.getInfo());
+// });
 // start
 app.put('/recorder', (req, res, next) => {
 	Recorder.start();
@@ -68,9 +68,9 @@ app.delete('/recorder', (req, res, next) => {
  * Converter
  */
 // status
-app.get('/converter', (req, res, next) => {
-    res.json(Converter.getInfo());
-});
+// app.get('/converter', (req, res, next) => {
+//     res.json(Converter.getInfo());
+// });
 // start
 app.put('/converter', (req, res, next) => {
     Converter.start();
@@ -80,6 +80,17 @@ app.put('/converter', (req, res, next) => {
 app.delete('/converter', (req, res, next) => {
     Converter.stop();
 	res.json({ success: true });
+});
+
+/**
+ * Converter & Recorder statuses
+ */
+// status
+app.get('/status', (req, res, next) => {
+    res.json({
+    	converter: Converter.getInfo(),
+		recorder: Recorder.getInfo()
+	});
 });
 
 /**
